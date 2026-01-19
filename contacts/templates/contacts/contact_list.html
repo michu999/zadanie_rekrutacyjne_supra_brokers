@@ -1,0 +1,268 @@
+{% extends 'contacts/base.html' %}
+{% load static %}
+
+{% block title %}Lista Kontaktów - Menedżer Kontaktów{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Page Header -->
+    <div class="col-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h1 class="h2 mb-1">
+                    <i class="bi bi-people-fill text-primary me-2"></i>
+                    Lista Kontaktów
+                </h1>
+                <p class="text-muted mb-0">
+                    Łącznie: <strong>{{ total_contacts }}</strong> kontakt(ów)
+                    {% if contacts.paginator.count != total_contacts %}
+                        | Wyświetlono: <strong>{{ contacts.paginator.count }}</strong> (po filtrowaniu)
+                    {% endif %}
+                </p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{% url 'contacts:create' %}" class="btn btn-success">
+                    <i class="bi bi-plus-lg me-1"></i>Dodaj kontakt
+                </a>
+                <a href="{% url 'contacts:import' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-upload me-1"></i>Import CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="get" action="{% url 'contacts:list' %}" class="row g-3">
+                    <!-- Search Input -->
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">
+                            <i class="bi bi-search me-1"></i>Szukaj
+                        </label>
+                        <input type="text"
+                               class="form-control"
+                               id="search"
+                               name="q"
+                               value="{{ search_query }}"
+                               placeholder="Imię, nazwisko, email, miasto...">
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">
+                            <i class="bi bi-funnel me-1"></i>Status
+                        </label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">-- Wszystkie statusy --</option>
+                            {% for status in statuses %}
+                                <option value="{{ status.id }}" {% if selected_status == status.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ status.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Sort By -->
+                    <div class="col-md-2">
+                        <label for="sort" class="form-label">
+                            <i class="bi bi-sort-alpha-down me-1"></i>Sortuj po
+                        </label>
+                        <select class="form-select" id="sort" name="sort">
+                            <option value="date_added" {% if sort_by == 'date_added' %}selected{% endif %}>Data dodania</option>
+                            <option value="last_name" {% if sort_by == 'last_name' %}selected{% endif %}>Nazwisko</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Order -->
+                    <div class="col-md-2">
+                        <label for="order" class="form-label">
+                            <i class="bi bi-arrow-down-up me-1"></i>Kolejność
+                        </label>
+                        <select class="form-select" id="order" name="order">
+                            <option value="desc" {% if sort_order == 'desc' %}selected{% endif %}>Malejąco</option>
+                            <option value="asc" {% if sort_order == 'asc' %}selected{% endif %}>Rosnąco</option>
+                        </select>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-filter"></i>
+                        </button>
+                    </div>
+                </form>
+
+                {% if search_query or selected_status %}
+                <div class="mt-2">
+                    <a href="{% url 'contacts:list' %}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Wyczyść filtry
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Contacts Table -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                {% if contacts %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col" style="width: 5%">#</th>
+                                <th scope="col" style="width: 15%">Nazwisko</th>
+                                <th scope="col" style="width: 12%">Imię</th>
+                                <th scope="col" style="width: 12%">Telefon</th>
+                                <th scope="col" style="width: 15%">Email</th>
+                                <th scope="col" style="width: 10%">Miasto</th>
+                                <th scope="col" style="width: 8%">Status</th>
+                                <th scope="col" style="width: 13%">
+                                    <i class="bi bi-cloud-sun me-1"></i>Pogoda
+                                </th>
+                                <th scope="col" style="width: 10%" class="text-center">Akcje</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for contact in contacts %}
+                            <tr>
+                                <td class="text-muted">{{ contact.id }}</td>
+                                <td>
+                                    <a href="{% url 'contacts:detail' contact.pk %}" class="text-decoration-none fw-semibold">
+                                        {{ contact.last_name }}
+                                    </a>
+                                </td>
+                                <td>{{ contact.first_name }}</td>
+                                <td>
+                                    <a href="tel:{{ contact.phone_number }}" class="text-decoration-none">
+                                        {{ contact.phone_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="mailto:{{ contact.email }}" class="text-decoration-none text-truncate d-inline-block" style="max-width: 150px;" title="{{ contact.email }}">
+                                        {{ contact.email }}
+                                    </a>
+                                </td>
+                                <td>{{ contact.city }}</td>
+                                <td>
+                                    <span class="badge
+                                        {% if contact.status.name == 'nowy' %}bg-success
+                                        {% elif contact.status.name == 'w trakcie' %}bg-primary
+                                        {% elif contact.status.name == 'zagubiony' %}bg-warning text-dark
+                                        {% elif contact.status.name == 'nieaktualny' %}bg-secondary
+                                        {% else %}bg-info{% endif %}">
+                                        {{ contact.status.name }}
+                                    </span>
+                                </td>
+                                <td class="weather-cell" data-city="{{ contact.city }}">
+                                    <div class="weather-loading">
+                                        <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                            <span class="visually-hidden">Ładowanie...</span>
+                                        </div>
+                                    </div>
+                                    <div class="weather-data d-none"></div>
+                                    <div class="weather-error d-none text-muted small">
+                                        <i class="bi bi-cloud-slash"></i> Brak danych
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'contacts:update' contact.pk %}"
+                                           class="btn btn-outline-primary"
+                                           title="Edytuj">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a href="{% url 'contacts:delete' contact.pk %}"
+                                           class="btn btn-outline-danger"
+                                           title="Usuń">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox display-1 text-muted"></i>
+                    <h4 class="mt-3 text-muted">Brak kontaktów</h4>
+                    <p class="text-muted">
+                        {% if search_query or selected_status %}
+                            Nie znaleziono kontaktów spełniających kryteria wyszukiwania.
+                        {% else %}
+                            Nie masz jeszcze żadnych kontaktów. Dodaj pierwszy!
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'contacts:create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg me-1"></i>Dodaj pierwszy kontakt
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if contacts.has_other_pages %}
+    <div class="col-12 mt-4">
+        <nav aria-label="Nawigacja po stronach">
+            <ul class="pagination justify-content-center mb-0">
+                {% if contacts.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ contacts.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if sort_order %}&order={{ sort_order }}{% endif %}">
+                        <i class="bi bi-chevron-left"></i> Poprzednia
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link"><i class="bi bi-chevron-left"></i> Poprzednia</span>
+                </li>
+                {% endif %}
+
+                {% for num in contacts.paginator.page_range %}
+                    {% if contacts.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > contacts.number|add:'-3' and num < contacts.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if sort_order %}&order={{ sort_order }}{% endif %}">
+                            {{ num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if contacts.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ contacts.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}{% if sort_order %}&order={{ sort_order }}{% endif %}">
+                        Następna <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Następna <i class="bi bi-chevron-right"></i></span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'contacts/js/weather.js' %}"></script>
+<script>
+    // Initialize weather loading when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        loadWeatherForAllContacts();
+    });
+</script>
+{% endblock %}

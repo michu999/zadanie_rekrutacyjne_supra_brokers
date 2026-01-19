@@ -1,0 +1,17 @@
+# Django Contact Management Application - Requirements
+# Core framework and dependencies
+
+# Django web framework
+Django>=5.0,<6.1
+
+# Django REST Framework for API endpoints
+djangorestframework>=3.14.0,<4.0
+
+# HTTP library for external API calls (weather service)
+requests>=2.31.0,<3.0
+
+# For running tests with coverage
+coverage>=7.0,<8.0
+
+# Gunicorn for production deployment (optional)
+gunicorn>=21.0,<23.0

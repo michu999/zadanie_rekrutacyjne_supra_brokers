@@ -1,0 +1,191 @@
+{% extends 'contacts/base.html' %}
+
+{% block title %}Import kontaktów z CSV{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'contacts:list' %}">
+                        <i class="bi bi-house me-1"></i>Kontakty
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Import CSV</li>
+            </ol>
+        </nav>
+
+        <!-- Page Header -->
+        <div class="mb-4">
+            <h1 class="h2">
+                <i class="bi bi-upload text-primary me-2"></i>
+                Import kontaktów z pliku CSV
+            </h1>
+            <p class="text-muted">
+                Zaimportuj wiele kontaktów jednocześnie z pliku CSV.
+            </p>
+        </div>
+
+        <!-- Import Form Card -->
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data" id="importForm">
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="{{ form.csv_file.id_for_label }}" class="form-label">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                            Wybierz plik CSV <span class="text-danger">*</span>
+                        </label>
+                        {{ form.csv_file }}
+                        {% if form.csv_file.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.csv_file.errors %}{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            Maksymalny rozmiar pliku: 5MB. Akceptowany format: CSV.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'contacts:list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Anuluj
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-upload me-1"></i>Importuj kontakty
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- CSV Format Instructions -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Wymagany format pliku CSV
+                </h5>
+            </div>
+            <div class="card-body">
+                <p>Plik CSV powinien zawierać następujące kolumny (nagłówki):</p>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kolumna</th>
+                                <th>Opis</th>
+                                <th>Przykład</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>first_name</code></td>
+                                <td>Imię kontaktu</td>
+                                <td>Jan</td>
+                            </tr>
+                            <tr>
+                                <td><code>last_name</code></td>
+                                <td>Nazwisko kontaktu</td>
+                                <td>Kowalski</td>
+                            </tr>
+                            <tr>
+                                <td><code>phone_number</code></td>
+                                <td>Numer telefonu (9-15 cyfr)</td>
+                                <td>+48123456789</td>
+                            </tr>
+                            <tr>
+                                <td><code>email</code></td>
+                                <td>Adres e-mail</td>
+                                <td>jan.kowalski@example.com</td>
+                            </tr>
+                            <tr>
+                                <td><code>city</code></td>
+                                <td>Miasto zamieszkania</td>
+                                <td>Warszawa</td>
+                            </tr>
+                            <tr>
+                                <td><code>status</code></td>
+                                <td>Nazwa statusu</td>
+                                <td>nowy</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h6 class="mt-4">Przykładowa zawartość pliku:</h6>
+                <div class="bg-dark text-light p-3 rounded">
+                    <code>
+first_name,last_name,phone_number,email,city,status<br>
+Jan,Kowalski,+48123456789,jan.kowalski@example.com,Warszawa,nowy<br>
+Anna,Nowak,+48987654321,anna.nowak@example.com,Kraków,w trakcie<br>
+Piotr,Wiśniewski,+48555666777,piotr.w@example.com,Gdańsk,nowy
+                    </code>
+                </div>
+
+                <div class="alert alert-warning mt-4 mb-0">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Ważne informacje:
+                    </h6>
+                    <ul class="mb-0">
+                        <li>Pierwsza linia pliku musi zawierać nagłówki kolumn.</li>
+                        <li>Separator kolumn: przecinek (,) lub średnik (;).</li>
+                        <li>Kodowanie pliku: UTF-8 (zalecane) lub Latin-1.</li>
+                        <li>Kontakty z duplikatami email/telefon zostaną pominięte.</li>
+                        <li>Jeśli status nie istnieje, zostanie użyty domyślny "nowy".</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Sample CSV -->
+        <div class="card mt-4">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h6 class="mb-1">
+                        <i class="bi bi-download me-2"></i>Pobierz przykładowy plik
+                    </h6>
+                    <p class="text-muted mb-0 small">
+                        Pobierz szablon CSV z przykładowymi danymi.
+                    </p>
+                </div>
+                <a href="#" class="btn btn-outline-primary" id="downloadSampleCsv">
+                    <i class="bi bi-file-earmark-arrow-down me-1"></i>Pobierz szablon
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Generate and download sample CSV file
+    document.getElementById('downloadSampleCsv').addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const csvContent = `first_name,last_name,phone_number,email,city,status
+Jan,Kowalski,+48123456789,jan.kowalski@example.com,Warszawa,nowy
+Anna,Nowak,+48987654321,anna.nowak@example.com,Kraków,w trakcie
+Piotr,Wiśniewski,+48555666777,piotr.wisniewski@example.com,Gdańsk,nowy
+Maria,Zielińska,+48111222333,maria.zielinska@example.com,Wrocław,zagubiony
+Tomasz,Lewandowski,+48444555666,tomasz.lewandowski@example.com,Poznań,nieaktualny`;
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'kontakty_szablon.csv');
+        link.style.visibility = 'hidden';
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+</script>
+{% endblock %}

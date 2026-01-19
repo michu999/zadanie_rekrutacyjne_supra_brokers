@@ -1,0 +1,70 @@
+{% extends 'contacts/base.html' %}
+
+{% block title %}Usuń kontakt - {{ contact }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'contacts:list' %}">
+                        <i class="bi bi-house me-1"></i>Kontakty
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'contacts:detail' contact.pk %}">{{ contact }}</a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">Usuń</li>
+            </ol>
+        </nav>
+
+        <!-- Delete Confirmation Card -->
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Potwierdź usunięcie
+                </h4>
+            </div>
+            <div class="card-body text-center py-4">
+                <div class="mb-4">
+                    <i class="bi bi-person-x-fill display-1 text-danger"></i>
+                </div>
+                <h5 class="mb-3">
+                    Czy na pewno chcesz usunąć kontakt?
+                </h5>
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">
+                            {{ contact.first_name }} {{ contact.last_name }}
+                        </h5>
+                        <p class="card-text text-muted mb-0">
+                            <i class="bi bi-envelope me-1"></i>{{ contact.email }}<br>
+                            <i class="bi bi-telephone me-1"></i>{{ contact.phone_number }}<br>
+                            <i class="bi bi-geo-alt me-1"></i>{{ contact.city }}
+                        </p>
+                    </div>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    <strong>Uwaga!</strong> Ta operacja jest nieodwracalna.
+                    Wszystkie dane kontaktu zostaną trwale usunięte.
+                </div>
+            </div>
+            <div class="card-footer bg-light d-flex justify-content-between">
+                <a href="{% url 'contacts:list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Anuluj
+                </a>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>Tak, usuń kontakt
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

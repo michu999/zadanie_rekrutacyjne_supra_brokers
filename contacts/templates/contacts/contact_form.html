@@ -1,0 +1,188 @@
+{% extends 'contacts/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - Menedżer Kontaktów{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+        <!-- Page Header -->
+        <div class="mb-4">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'contacts:list' %}">
+                            <i class="bi bi-house me-1"></i>Kontakty
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        {% if is_edit %}Edycja{% else %}Nowy kontakt{% endif %}
+                    </li>
+                </ol>
+            </nav>
+            <h1 class="h2">
+                {% if is_edit %}
+                    <i class="bi bi-pencil-square text-primary me-2"></i>
+                {% else %}
+                    <i class="bi bi-person-plus-fill text-success me-2"></i>
+                {% endif %}
+                {{ title }}
+            </h1>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="post"
+                      id="contactForm"
+                      novalidate
+                      class="needs-validation">
+                    {% csrf_token %}
+
+                    <!-- Personal Information Section -->
+                    <h5 class="text-muted mb-3">
+                        <i class="bi bi-person me-2"></i>Dane osobowe
+                    </h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                Imię <span class="text-danger">*</span>
+                            </label>
+                            {{ form.first_name }}
+                            <div class="invalid-feedback" id="first_name-error">
+                                Imię jest wymagane (min. 2 znaki).
+                            </div>
+                            {% if form.first_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                Nazwisko <span class="text-danger">*</span>
+                            </label>
+                            {{ form.last_name }}
+                            <div class="invalid-feedback" id="last_name-error">
+                                Nazwisko jest wymagane (min. 2 znaki).
+                            </div>
+                            {% if form.last_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Section -->
+                    <h5 class="text-muted mb-3">
+                        <i class="bi bi-telephone me-2"></i>Dane kontaktowe
+                    </h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">
+                                Numer telefonu <span class="text-danger">*</span>
+                            </label>
+                            {{ form.phone_number }}
+                            <div class="form-text">Format: +48123456789 (9-15 cyfr)</div>
+                            <div class="invalid-feedback" id="phone_number-error">
+                                Podaj prawidłowy numer telefonu (9-15 cyfr).
+                            </div>
+                            {% if form.phone_number.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.phone_number.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                Adres e-mail <span class="text-danger">*</span>
+                            </label>
+                            {{ form.email }}
+                            <div class="invalid-feedback" id="email-error">
+                                Podaj prawidłowy adres e-mail.
+                            </div>
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Location & Status Section -->
+                    <h5 class="text-muted mb-3">
+                        <i class="bi bi-geo-alt me-2"></i>Lokalizacja i status
+                    </h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ form.city.id_for_label }}" class="form-label">
+                                Miasto <span class="text-danger">*</span>
+                            </label>
+                            {{ form.city }}
+                            <div class="form-text">Używane do pobierania danych pogodowych</div>
+                            <div class="invalid-feedback" id="city-error">
+                                Miasto jest wymagane (min. 2 znaki).
+                            </div>
+                            {% if form.city.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.city.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">
+                                Status <span class="text-danger">*</span>
+                            </label>
+                            {{ form.status }}
+                            <div class="invalid-feedback" id="status-error">
+                                Wybierz status kontaktu.
+                            </div>
+                            {% if form.status.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.status.errors %}{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <hr class="my-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'contacts:list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Anuluj
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-lg me-1"></i>{{ button_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Form Help Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-body">
+                <h6 class="card-title text-info">
+                    <i class="bi bi-info-circle me-1"></i>Wskazówki
+                </h6>
+                <ul class="mb-0 small text-muted">
+                    <li>Pola oznaczone <span class="text-danger">*</span> są wymagane.</li>
+                    <li>Numer telefonu musi być unikalny i zawierać od 9 do 15 cyfr.</li>
+                    <li>Adres e-mail musi być unikalny i w prawidłowym formacie.</li>
+                    <li>Miasto jest wykorzystywane do wyświetlania aktualnej pogody.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize form validation when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initFormValidation();
+    });
+</script>
+{% endblock %}
