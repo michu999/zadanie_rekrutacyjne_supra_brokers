@@ -6,6 +6,7 @@ from .models import Contact, ContactStatusChoices
 
 
 class ContactCRUDTest(TestCase):
+    """Tests for contact CRUD operations via web views."""
 
     def setUp(self):
         self.client = Client()
@@ -14,7 +15,7 @@ class ContactCRUDTest(TestCase):
         )
 
     def test_contact_create_and_list(self):
-        # Create contact via form
+        """Test creating a contact and viewing it in the list."""
         response = self.client.post(reverse('contacts:create'), {
             'first_name': 'Jan',
             'last_name': 'Kowalski',
@@ -25,7 +26,6 @@ class ContactCRUDTest(TestCase):
         })
         self.assertEqual(response.status_code, 302)
 
-        # Verify in list view
         response = self.client.get(reverse('contacts:list'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Jan')
@@ -33,6 +33,7 @@ class ContactCRUDTest(TestCase):
 
 
 class ContactAPITest(APITestCase):
+    """Tests for contact REST API endpoints."""
 
     def setUp(self):
         self.status, _ = ContactStatusChoices.objects.get_or_create(
@@ -40,6 +41,7 @@ class ContactAPITest(APITestCase):
         )
 
     def test_api_crud_operations(self):
+        """Test create, read, update, delete via API."""
         # Create
         data = {
             'first_name': 'Anna',

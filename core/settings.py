@@ -38,10 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    #3rd party
+    # Third party apps
     'rest_framework',
 
-    #local
+    # Local apps
     'contacts',
 ]
 
@@ -122,7 +122,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # python manage.py collectstatic
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -137,12 +137,15 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Cache configuration
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 1800,  # 30 minutes
+        'TIMEOUT': 1800,
     }
 }
-WEATHER_CACHE_TIMEOUT = 1800
-GEOCODE_CACHE_TIMEOUT = 86400  # 24h
+
+# Weather API cache settings
+WEATHER_CACHE_TIMEOUT = 1800    # 30 minutes
+GEOCODE_CACHE_TIMEOUT = 86400   # 24 hours

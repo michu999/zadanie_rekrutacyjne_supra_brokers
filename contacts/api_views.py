@@ -15,6 +15,7 @@ NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 OPEN_METEO_URL = "https://api.open-meteo.com/v1/forecast"
 REQUEST_TIMEOUT = 15
 
+# Weather code descriptions (Polish)
 WEATHER_CODES = {
     0: "Bezchmurnie", 1: "Głównie bezchmurnie", 2: "Częściowe zachmurzenie",
     3: "Pochmurno", 45: "Mgła", 48: "Szadź", 51: "Lekka mżawka",
@@ -135,13 +136,13 @@ class ContactDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class WeatherAPIView(APIView):
-    """API endpoint for fetching weather data with caching and fallback."""
+    """API endpoint for weather data with caching and fallback coordinates."""
 
     def get(self, request, city):
         if not city or len(city) < 2:
             return Response({'error': 'Nieprawidłowa nazwa miasta'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Normalize city name
+        # Decode and normalize city name
         city_decoded = unquote(city)
         city_normalized = city_decoded.lower().strip()
 
@@ -152,14 +153,13 @@ class WeatherAPIView(APIView):
             return Response(cached_weather)
 
         try:
-            # Step 1: Get coordinates - try fallback first, then Nominatim
             lat, lon = None, None
 
-            # Check fallback coordinates for Polish cities
+            # Try fallback coordinates first for Polish cities
             if city_normalized in POLISH_CITIES_COORDS:
                 lat, lon = POLISH_CITIES_COORDS[city_normalized]
             else:
-                # Try Nominatim API
+                # Try Nominatim geocoding API
                 try:
                     headers = {'User-Agent': 'DjangoContactManager/1.0 (recruitment-task)'}
                     params = {'q': city_decoded, 'format': 'json', 'limit': 1}
@@ -171,12 +171,12 @@ class WeatherAPIView(APIView):
                         lat = float(geo_data[0]['lat'])
                         lon = float(geo_data[0]['lon'])
                 except requests.RequestException:
-                    pass  # Nominatim failed, lat/lon remain None
+                    pass
 
             if lat is None or lon is None:
                 return Response({'error': 'Nie znaleziono miasta'}, status=status.HTTP_404_NOT_FOUND)
 
-            # Step 2: Get weather from Open-Meteo
+            # Fetch weather from Open-Meteo API
             weather_params = {
                 'latitude': lat,
                 'longitude': lon,
@@ -191,7 +191,7 @@ class WeatherAPIView(APIView):
 
             current = weather_data.get('current_weather', {})
 
-            # Get humidity from hourly data
+            # Extract humidity from hourly data
             humidity = None
             hourly = weather_data.get('hourly', {})
             if 'relativehumidity_2m' in hourly:
@@ -211,7 +211,7 @@ class WeatherAPIView(APIView):
                 'description': WEATHER_CODES.get(weather_code, 'Nieznane')
             }
 
-            # Cache for 30 minutes
+            # Cache result for 30 minutes
             cache.set(cache_key, response_data, timeout=1800)
 
             return Response(response_data)

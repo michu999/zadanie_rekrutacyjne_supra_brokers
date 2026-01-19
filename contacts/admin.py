@@ -4,7 +4,7 @@ from .models import Contact, ContactStatusChoices
 
 @admin.register(ContactStatusChoices)
 class ContactStatusChoicesAdmin(admin.ModelAdmin):
-    """Admin configuration for ContactStatusChoices model."""
+    """Admin configuration for contact status model."""
 
     list_display = ['name', 'description', 'get_contact_count', 'created_at']
     search_fields = ['name', 'description']
@@ -19,7 +19,7 @@ class ContactStatusChoicesAdmin(admin.ModelAdmin):
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    """Admin configuration for Contact model."""
+    """Admin configuration for contact model."""
 
     list_display = [
         'last_name',
@@ -54,7 +54,7 @@ class ContactAdmin(admin.ModelAdmin):
 
     @admin.action(description='Oznacz jako nowy')
     def mark_as_new(self, request, queryset):
-        """Bulk action to mark selected contacts as 'nowy'."""
+        """Bulk action to mark selected contacts as 'new'."""
         try:
             new_status = ContactStatusChoices.objects.get(name='nowy')
             updated = queryset.update(status=new_status)
@@ -64,11 +64,10 @@ class ContactAdmin(admin.ModelAdmin):
 
     @admin.action(description='Oznacz jako nieaktualny')
     def mark_as_inactive(self, request, queryset):
-        """Bulk action to mark selected contacts as 'nieaktualny'."""
+        """Bulk action to mark selected contacts as 'inactive'."""
         try:
             inactive_status = ContactStatusChoices.objects.get(name='nieaktualny')
             updated = queryset.update(status=inactive_status)
             self.message_user(request, f'Zaktualizowano {updated} kontakt(ów).')
         except ContactStatusChoices.DoesNotExist:
             self.message_user(request, 'Status "nieaktualny" nie istnieje.', level='ERROR')
-

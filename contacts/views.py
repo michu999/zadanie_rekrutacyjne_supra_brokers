@@ -13,7 +13,7 @@ from .forms import ContactForm, ContactImportForm
 
 
 class ContactListView(ListView):
-    """Display list of all contacts with search and sorting."""
+    """Display paginated list of contacts with search and sorting."""
 
     model = Contact
     template_name = 'contacts/contact_list.html'
@@ -28,6 +28,7 @@ class ContactListView(ListView):
         sort_order = self.request.GET.get('order', 'desc')
         status_filter = self.request.GET.get('status', '')
 
+        # Search filter
         if search_query:
             queryset = queryset.filter(
                 Q(first_name__icontains=search_query) |
@@ -37,9 +38,11 @@ class ContactListView(ListView):
                 Q(phone_number__icontains=search_query)
             )
 
+        # Status filter
         if status_filter:
             queryset = queryset.filter(status_id=status_filter)
 
+        # Sorting
         valid_sort_fields = ['last_name', 'date_added', 'first_name', 'city']
         if sort_by not in valid_sort_fields:
             sort_by = 'date_added'
@@ -61,7 +64,7 @@ class ContactListView(ListView):
 
 
 class ContactDetailView(DetailView):
-    """Display detailed information about a single contact."""
+    """Display single contact details."""
 
     model = Contact
     template_name = 'contacts/contact_detail.html'
@@ -69,7 +72,7 @@ class ContactDetailView(DetailView):
 
 
 class ContactCreateView(CreateView):
-    """Handle creation of new contacts."""
+    """Handle new contact creation."""
 
     model = Contact
     form_class = ContactForm
@@ -95,7 +98,7 @@ class ContactCreateView(CreateView):
 
 
 class ContactUpdateView(UpdateView):
-    """Handle editing of existing contacts."""
+    """Handle contact editing."""
 
     model = Contact
     form_class = ContactForm
@@ -122,7 +125,7 @@ class ContactUpdateView(UpdateView):
 
 
 class ContactDeleteView(DeleteView):
-    """Handle deletion of contacts with confirmation."""
+    """Handle contact deletion with confirmation."""
 
     model = Contact
     template_name = 'contacts/contact_confirm_delete.html'
@@ -161,7 +164,7 @@ class ContactImportView(FormView):
                 messages.error(self.request, 'Nie można odczytać pliku.')
                 return self.form_invalid(form)
 
-        # Parse CSV
+        # Parse CSV with auto-detected delimiter
         io_string = io.StringIO(decoded_file)
         try:
             sample = decoded_file[:1024]
@@ -172,7 +175,7 @@ class ContactImportView(FormView):
             io_string.seek(0)
             reader = csv.DictReader(io_string)
 
-        # Validate headers
+        # Validate required columns
         required_columns = {'first_name', 'last_name', 'phone_number', 'email', 'city', 'status'}
         if not reader.fieldnames:
             messages.error(self.request, 'Plik CSV jest pusty lub ma nieprawidłowy format.')
@@ -200,7 +203,7 @@ class ContactImportView(FormView):
                 if not any(row.values()):
                     continue
 
-                # Get status
+                # Get status or use default
                 status_name = row.get('status', '').strip()
                 try:
                     status = ContactStatusChoices.objects.get(name__iexact=status_name)
@@ -239,4 +242,3 @@ class ContactImportView(FormView):
             messages.warning(self.request, f'Pominięto {skipped_count} wiersz(y).')
 
         return HttpResponseRedirect(self.success_url)
-
